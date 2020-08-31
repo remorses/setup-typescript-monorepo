@@ -87,6 +87,7 @@ export const toProjectReferences = (options: Options) => {
                         extends: "./tsconfig.json",
                         compilerOptions: {
                             module: "ESNext",
+                            moduleResolution: "Node",
                             outDir: "./esm"
                         }
                     },
