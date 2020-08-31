@@ -56,7 +56,11 @@ export const toProjectReferences = (options: Options) => {
         const newTsconfigJSON = tsconfigJSON;
 
         if (options.addRootDir) {
-            newTsconfigJSON["rootDir"] = options.addRootDir;
+            const compilerOptions = newTsconfigJSON["compilerOptions"];
+            if (!compilerOptions) {
+                newTsconfigJSON["compilerOptions"] = {};
+            }
+            compilerOptions["rootDir"] = options.addRootDir;
         }
 
         if (options.addExtends) {
