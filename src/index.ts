@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs, { writeFileSync, existsSync } from "fs";
 import path from "path";
 import commentJSON from "comment-json";
 import { plugin as workspacesPlugin } from "./manager/workspaces";
@@ -12,6 +12,7 @@ export type Options = {
     addInclude?: string[];
     onlyPackages?: string[];
     addRootDir?: string;
+    addEsmTsconfig?: string;
     addExtends?: string;
     removeComments?: boolean;
     addComposite?: boolean;
@@ -32,6 +33,7 @@ export type ToProjectReferencesResult =
       };
 export const toProjectReferences = (options: Options) => {
     options.onlyPackages = options.onlyPackages || [];
+    options.indentation = options.indentation || 2;
     const plugins = Array.isArray(options.plugins) && options.plugins.length > 0 ? options.plugins : [workspacesPlugin];
     const pluginImplementations = plugins.map((plugin) => plugin(options));
     // use first plugin
@@ -51,7 +53,6 @@ export const toProjectReferences = (options: Options) => {
             .map((x) => getDependencies(x.packageJSON).filter((k) => allPackages.find((x) => x.packageJSON.name === k)))
     );
     allPackages.forEach((packageInfo) => {
-        // TODO add the package.json main and module
         // TODO add the package.json script
         // skip if not in  onlyPackages
         if (options.onlyPackages?.length) {
@@ -61,6 +62,27 @@ export const toProjectReferences = (options: Options) => {
                 return;
             }
         }
+        // add tsconfig.esm.json
+        if (!options.checkOnly && options.addEsmTsconfig !== undefined) {
+            if (options.addEsmTsconfig === "") {
+                options.addEsmTsconfig = "tsconfig.esm.json";
+            }
+            if (!existsSync(options.addEsmTsconfig)) {
+                const esmTsconfig = JSON.stringify(
+                    {
+                        extends: "./tsconfig.json",
+                        compilerOptions: {
+                            module: "ESNext",
+                            outDir: "./esm"
+                        }
+                    },
+                    null,
+                    options.indentation
+                );
+                writeFileSync(options.addEsmTsconfig, esmTsconfig);
+            }
+        }
+
         const tsconfigFilePath =
             options.tsConfigPathFinder?.(packageInfo.location) ?? path.join(packageInfo.location, "tsconfig.json");
         if (!fs.existsSync(tsconfigFilePath)) {

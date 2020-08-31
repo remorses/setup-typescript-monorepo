@@ -81,6 +81,10 @@ export const cli = meow(
             addRootDir: {
                 type: "string"
             },
+            addEsmTsconfig: {
+                type: "string",
+                default: undefined
+            },
             addExtends: {
                 type: "string"
             },
