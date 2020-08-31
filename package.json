@@ -1,7 +1,7 @@
 {
     "name": "setup-typescript-monorepo",
     "_": "[bump]",
-    "version": "0.0.0",
+    "version": "0.0.2",
     "description": "Convert Workspaces to TypeScript's Project References",
     "keywords": [
         "yarn",
