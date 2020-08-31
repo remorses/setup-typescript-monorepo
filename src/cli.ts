@@ -99,12 +99,6 @@ export const run = async (
             stdout: flags.check ? "" : "Update Project References!",
             stderr: null
         };
-    } else if (result.aggregateError) {
-        return {
-            exitStatus: 1,
-            stdout: null,
-            stderr: result.aggregateError.message + "\n\n" + result.aggregateError.errors.join("\n")
-        };
     }
     return {
         exitStatus: 0,

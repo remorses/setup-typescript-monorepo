@@ -39,7 +39,6 @@ export const toProjectReferences = (options: Options) => {
         return path.relative(options.rootDir, pkgPath);
     };
     const allPackages = supportPlugin.getAllPackages();
-    const errors: Error[] = [];
     allPackages.forEach((packageInfo) => {
         const tsconfigFilePath =
             options.tsConfigPathFinder?.(packageInfo.location) ?? path.join(packageInfo.location, "tsconfig.json");
@@ -65,12 +64,10 @@ export const toProjectReferences = (options: Options) => {
                 }
                 if (packageInfo.location === absolutePathOrNull) {
                     const selfName = relativeName(packageInfo.location);
-                    errors.push(
-                        new Error(
-                            `[${selfName}] Self dependencies is something wrong: ${selfName} refer to ${relativeName(
-                                absolutePathOrNull
-                            )}`
-                        )
+                    throw new Error(
+                        `[${selfName}] Self dependencies is something wrong: ${selfName} refer to ${relativeName(
+                            absolutePathOrNull
+                        )}`
                     );
                 }
                 return {
@@ -78,53 +75,34 @@ export const toProjectReferences = (options: Options) => {
                 };
             })
             .filter((r) => Boolean(r));
-        const currentProjectReferences: { path: string }[] = tsconfigJSON["references"] ?? [];
+
+            
+        const newTsconfigJSON = tsconfigJSON;
+        newTsconfigJSON["references"] = newProjectReferences;
+
+
         if (options.checkOnly) {
-            // check
-            try {
-                // create pure object for compare
-                const cleanCurrentProjectReferences = JSON.parse(
-                    JSON.stringify(commentJSON.parse(commentJSON.stringify(currentProjectReferences), undefined, true))
-                );
-                assert.deepStrictEqual(cleanCurrentProjectReferences, newProjectReferences);
-            } catch (error) {
-                const selfName = relativeName(packageInfo.location);
-                errors.push(new Error(`[${selfName}] ${error.message}`));
-            }
-            return;
+            assert.deepStrictEqual(pureObject(tsconfigJSON), pureObject(newTsconfigJSON));
         } else {
             // update
             const indentation = options.indentation ?? 2;
-            if (errors.length === 0) {
-                tsconfigJSON["references"] = newProjectReferences;
-                fs.writeFileSync(
-                    tsconfigFilePath,
-                    options.removeComments
-                        ? JSON.stringify(tsconfigJSON, null, indentation)
-                        : commentJSON.stringify(tsconfigJSON, null, indentation),
-                    "utf-8"
-                );
-            }
+            fs.writeFileSync(
+                tsconfigFilePath,
+                options.removeComments
+                    ? JSON.stringify(newTsconfigJSON, null, indentation)
+                    : commentJSON.stringify(newTsconfigJSON, null, indentation),
+                "utf-8"
+            );
         }
     });
-    if (errors.length > 0) {
-        return {
-            ok: false,
-            aggregateError: {
-                message: `workspaces-to-typescript-project-references found ${errors.length} errors.
-
-Please update your tsconfig.json via following command.
-
-$ workspaces-to-typescript-project-references
-`,
-                errors
-            }
-        };
-    }
     return {
         ok: true
     };
 };
+
+function pureObject(x) {
+    return JSON.parse(JSON.stringify(commentJSON.parse(commentJSON.stringify(x), undefined, true)));
+}
 
 const isChildOf = (child: string, parent: string) => {
     if (child === parent) return false;
