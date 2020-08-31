@@ -55,6 +55,9 @@ export const toProjectReferences = (options: Options) => {
             )
     );
     allPackages.forEach((packageInfo) => {
+        // TODO add the package.json main and module
+        // TODO add the package.json script
+        // skip if not in  onlyPackages
         if (options.onlyPackages?.length) {
             const name = packageInfo.packageJSON.name;
             if (!options.onlyPackages.includes(name) && !onlyPackagesDeps.includes(name)) {
