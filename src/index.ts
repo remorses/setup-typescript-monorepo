@@ -12,6 +12,7 @@ export type Options = {
     addRootDir?: string;
     addExtends?: string;
     removeComments?: boolean;
+    addComposite?: boolean;
     indentation?: number;
     plugins?: PackageManagerPlugin[];
     tsConfigPathFinder?(location: string): string;
@@ -54,6 +55,14 @@ export const toProjectReferences = (options: Options) => {
 
         const tsconfigJSON = commentJSON.parse(fs.readFileSync(tsconfigFilePath, "utf-8"));
         const newTsconfigJSON = tsconfigJSON;
+
+        if (options.addComposite) {
+            const compilerOptions = newTsconfigJSON["compilerOptions"];
+            if (!compilerOptions) {
+                newTsconfigJSON["compilerOptions"] = {};
+            }
+            compilerOptions["composite"] = true;
+        }
 
         if (options.addRootDir) {
             const compilerOptions = newTsconfigJSON["compilerOptions"];
