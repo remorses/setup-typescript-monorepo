@@ -9,6 +9,7 @@ export type Options = {
     rootDir: string;
     checkOnly: boolean;
     onlyOnPath?: string;
+    addInclude?: string;
     addRootDir?: string;
     addExtends?: string;
     removeComments?: boolean;
@@ -77,6 +78,16 @@ export const toProjectReferences = (options: Options) => {
                 path.resolve(packageInfo.location),
                 path.resolve(options.addExtends)
             );
+        }
+
+        if (options.addInclude) {
+            if (!newTsconfigJSON["include"]) {
+                newTsconfigJSON["include"] = [];
+            }
+            const includes: string[] = newTsconfigJSON["include"];
+            if (!includes.includes(options.addInclude)) {
+                includes.push(options.addInclude);
+            }
         }
 
         const references = supportPlugin.getDependencies(packageInfo.packageJSON);
