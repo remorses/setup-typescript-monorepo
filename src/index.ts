@@ -10,6 +10,7 @@ export type Options = {
     checkOnly: boolean;
     onlyOnPath?: string;
     addInclude?: string[];
+    onlyPackages?: string[];
     addRootDir?: string;
     addExtends?: string;
     removeComments?: boolean;
@@ -30,6 +31,7 @@ export type ToProjectReferencesResult =
           };
       };
 export const toProjectReferences = (options: Options) => {
+    options.onlyPackages = options.onlyPackages || [];
     const plugins = Array.isArray(options.plugins) && options.plugins.length > 0 ? options.plugins : [workspacesPlugin];
     const pluginImplementations = plugins.map((plugin) => plugin(options));
     // use first plugin
@@ -43,7 +45,23 @@ export const toProjectReferences = (options: Options) => {
         return path.relative(options.rootDir, pkgPath);
     };
     const allPackages = supportPlugin.getAllPackages();
+    const onlyPackagesDeps = flatten(
+        options.onlyPackages
+            .map((x) => allPackages.find((y) => y.packageJSON.name === x))
+            .map((x) =>
+                Object.keys(x.packageJSON.dependencies || {}).filter((k) =>
+                    allPackages.find((x) => x.packageJSON.name === k)
+                )
+            )
+    );
     allPackages.forEach((packageInfo) => {
+        if (options.onlyPackages?.length) {
+            const name = packageInfo.packageJSON.name;
+            if (!options.onlyPackages.includes(name) && !onlyPackagesDeps.includes(name)) {
+                console.log(`skipping ${name}`);
+                return;
+            }
+        }
         const tsconfigFilePath =
             options.tsConfigPathFinder?.(packageInfo.location) ?? path.join(packageInfo.location, "tsconfig.json");
         if (!fs.existsSync(tsconfigFilePath)) {
@@ -134,6 +152,12 @@ export const toProjectReferences = (options: Options) => {
 
 function pureObject(x) {
     return JSON.parse(JSON.stringify(commentJSON.parse(commentJSON.stringify(x), undefined, true)));
+}
+
+function flatten(arr) {
+    return arr.reduce(function (flat, toFlatten) {
+        return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
+    }, []);
 }
 
 function setCompilerOption(newTsconfigJSON, k, v) {

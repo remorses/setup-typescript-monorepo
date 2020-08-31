@@ -35,6 +35,10 @@ export const cli = meow(
 
       --addComposite
 
+      --addComposite
+
+      --package
+
     Examples
       # Update project references in tsconfig.json
       $ workspaces-to-typescript-project-references
@@ -50,6 +54,10 @@ export const cli = meow(
             check: {
                 type: "boolean",
                 default: false
+            },
+            package: {
+                type: "string",
+                isMultiple: true
             },
             removeComments: {
                 type: "boolean",
@@ -107,6 +115,7 @@ export const run = async (
         checkOnly: flags.check,
         plugins,
         tsConfigPathFinder: flags.tsconfigPath ? customTsConfigFinder : undefined,
+        onlyPackages: flags.package,
         ...flags
     });
     if (result.ok) {
