@@ -12,10 +12,19 @@ describe("toProjectReferences", function () {
     it("support yarn workspaces", () => {
         const result = toProjectReferences({
             rootDir: path.join(__dirname, "fixtures/yarn-workspaces"),
-            checkOnly: true,
-            addComposite: true
+            checkOnly: true
+            // addComposite: true
         });
         expect(result.ok).toBe(true);
+    });
+    it("adds composite", () => {
+        expect(() =>
+            toProjectReferences({
+                rootDir: path.join(__dirname, "fixtures/yarn-workspaces"),
+                checkOnly: true,
+                addComposite: true
+            })
+        ).toThrow();
     });
     it("ok: false when some package has self-dependency", () => {
         expect(() =>
