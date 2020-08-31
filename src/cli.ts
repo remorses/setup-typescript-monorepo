@@ -1,6 +1,6 @@
 import meow from "meow";
 import path from "path";
-import { toProjectReferences } from "./index";
+import { toProjectReferences, UNSET_FLAG } from "./index";
 
 export const cli = meow(
     `
@@ -82,8 +82,7 @@ export const cli = meow(
                 type: "string"
             },
             addEsmTsconfig: {
-                type: "string",
-                default: undefined
+                type: "string"
             },
             addExtends: {
                 type: "string"

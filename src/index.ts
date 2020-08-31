@@ -5,6 +5,8 @@ import { plugin as workspacesPlugin } from "./manager/workspaces";
 import assert from "assert";
 import { PackageManagerPlugin } from "./manager/PackageManagerPlugin";
 
+export const UNSET_FLAG = "__unset__";
+
 export type Options = {
     rootDir: string;
     checkOnly: boolean;
@@ -58,13 +60,25 @@ export const toProjectReferences = (options: Options) => {
         if (options.onlyPackages?.length) {
             const name = packageInfo.packageJSON.name;
             if (!options.onlyPackages.includes(name) && !onlyPackagesDeps.includes(name)) {
-                console.log(`skipping ${name}`);
                 return;
             }
         }
-        // add tsconfig.esm.json
-        if (!options.checkOnly && options.addEsmTsconfig !== undefined) {
-            if (options.addEsmTsconfig === "") {
+
+        const tsconfigFilePath =
+            options.tsConfigPathFinder?.(packageInfo.location) ?? path.join(packageInfo.location, "tsconfig.json");
+
+        if (!fs.existsSync(tsconfigFilePath)) {
+            // Skip has not tsconfig.json
+            return;
+        }
+        if (options.onlyOnPath && !isChildOf(path.resolve(packageInfo.location), path.resolve(options.onlyOnPath))) {
+            return;
+        }
+
+        // NO MORE CHECKS ///////////////////////////////
+
+        if (!options.checkOnly && options.addEsmTsconfig) {
+            if ((options.addEsmTsconfig as any) === true) {
                 options.addEsmTsconfig = "tsconfig.esm.json";
             }
             if (!existsSync(options.addEsmTsconfig)) {
@@ -79,18 +93,8 @@ export const toProjectReferences = (options: Options) => {
                     null,
                     options.indentation
                 );
-                writeFileSync(options.addEsmTsconfig, esmTsconfig);
+                writeFileSync(path.resolve(packageInfo.location, options.addEsmTsconfig), esmTsconfig);
             }
-        }
-
-        const tsconfigFilePath =
-            options.tsConfigPathFinder?.(packageInfo.location) ?? path.join(packageInfo.location, "tsconfig.json");
-        if (!fs.existsSync(tsconfigFilePath)) {
-            // Skip has not tsconfig.json
-            return;
-        }
-        if (options.onlyOnPath && !isChildOf(path.resolve(packageInfo.location), path.resolve(options.onlyOnPath))) {
-            return;
         }
 
         const tsconfigJSON = commentJSON.parse(fs.readFileSync(tsconfigFilePath, "utf-8"));
