@@ -48,11 +48,7 @@ export const toProjectReferences = (options: Options) => {
     const onlyPackagesDeps = flatten(
         options.onlyPackages
             .map((x) => allPackages.find((y) => y.packageJSON.name === x))
-            .map((x) =>
-                Object.keys(x.packageJSON.dependencies || {}).filter((k) =>
-                    allPackages.find((x) => x.packageJSON.name === k)
-                )
-            )
+            .map((x) => getDependencies(x.packageJSON).filter((k) => allPackages.find((x) => x.packageJSON.name === k)))
     );
     allPackages.forEach((packageInfo) => {
         // TODO add the package.json main and module
@@ -169,6 +165,10 @@ function setCompilerOption(newTsconfigJSON, k, v) {
         newTsconfigJSON["compilerOptions"] = {};
     }
     newTsconfigJSON["compilerOptions"][k] = v;
+}
+
+function getDependencies(packageJSON) {
+    return [...Object.keys(packageJSON.dependencies || {}), ...Object.keys(packageJSON.devDependencies || {})];
 }
 
 const isChildOf = (child: string, parent: string) => {
