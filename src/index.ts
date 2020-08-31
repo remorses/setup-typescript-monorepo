@@ -9,6 +9,7 @@ export type Options = {
     rootDir: string;
     checkOnly: boolean;
     onlyOnPath?: string;
+    addRootDir?: string;
     removeComments?: boolean;
     indentation?: number;
     plugins?: PackageManagerPlugin[];
@@ -49,7 +50,14 @@ export const toProjectReferences = (options: Options) => {
         if (options.onlyOnPath && !isChildOf(path.resolve(packageInfo.location), path.resolve(options.onlyOnPath))) {
             return;
         }
+
         const tsconfigJSON = commentJSON.parse(fs.readFileSync(tsconfigFilePath, "utf-8"));
+        const newTsconfigJSON = tsconfigJSON;
+
+        if (options.addRootDir) {
+            newTsconfigJSON['rootDir'] = options.addRootDir
+        }
+
         const references = supportPlugin.getDependencies(packageInfo.packageJSON);
         const newProjectReferences = references
             .map((reference) => {
@@ -76,10 +84,7 @@ export const toProjectReferences = (options: Options) => {
             })
             .filter((r) => Boolean(r));
 
-            
-        const newTsconfigJSON = tsconfigJSON;
         newTsconfigJSON["references"] = newProjectReferences;
-
 
         if (options.checkOnly) {
             assert.deepStrictEqual(pureObject(tsconfigJSON), pureObject(newTsconfigJSON));
