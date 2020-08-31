@@ -79,7 +79,7 @@ export const toProjectReferences = (options: Options) => {
         }
 
         if (options.addRootDir) {
-            setCompilerOption(newTsconfigJSON, "rootDir", options.rootDir);
+            setCompilerOption(newTsconfigJSON, "rootDir", options.addRootDir);
         }
 
         if (options.addExtends) {
