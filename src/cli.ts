@@ -12,6 +12,9 @@ export const cli = meow(
       --root             [Path:string] Root directory of the monorepo. 
                          Default: current working directory
 
+      --package          Only run on specified package and its dependencies, 
+                         can be provided multiple times
+
       --check            If set the flag, check only differences of tsconfig.json and does not update tsconfig.json.
                          If the check is failed, exit status 1. It is useful for testing.
        
@@ -35,9 +38,7 @@ export const cli = meow(
 
       --addComposite
 
-      --addComposite
-
-      --package
+      --addEsmTsconfig  Adds a tsconfig.esm.json file to compile to esm
 
     Examples
       # Update project references in tsconfig.json
