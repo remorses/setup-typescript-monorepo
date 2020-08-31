@@ -4,7 +4,7 @@ todos
 
 -   `--removeComments`
 -   `--addRootDir`
--   `--addIncludes`
+-   `--addInclude`
 -   `--addExtend`
 -   add composite when adding references
 -   add declaration true

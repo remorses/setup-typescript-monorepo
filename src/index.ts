@@ -9,7 +9,7 @@ export type Options = {
     rootDir: string;
     checkOnly: boolean;
     onlyOnPath?: string;
-    addInclude?: string;
+    addInclude?: string[];
     addRootDir?: string;
     addExtends?: string;
     removeComments?: boolean;
@@ -80,14 +80,16 @@ export const toProjectReferences = (options: Options) => {
             );
         }
 
-        if (options.addInclude) {
+        if (options.addInclude?.length) {
             if (!newTsconfigJSON["include"]) {
                 newTsconfigJSON["include"] = [];
             }
             const includes: string[] = newTsconfigJSON["include"];
-            if (!includes.includes(options.addInclude)) {
-                includes.push(options.addInclude);
-            }
+            options.addInclude.forEach((x) => {
+                if (!includes.includes(x)) {
+                    includes.push(x);
+                }
+            });
         }
 
         const references = supportPlugin.getDependencies(packageInfo.packageJSON);

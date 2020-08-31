@@ -27,6 +27,14 @@ export const cli = meow(
 
       --onlyOnPath       apply changes only on packages children of specified path
 
+      --addInclude
+
+      --addExtends
+
+      --addRootDir
+
+      --addComposite
+
     Examples
       # Update project references in tsconfig.json
       $ workspaces-to-typescript-project-references
@@ -56,6 +64,16 @@ export const cli = meow(
                 isMultiple: true
             },
             onlyOnPath: {
+                type: "string"
+            },
+            addInclude: {
+                type: "string",
+                isMultiple: true
+            },
+            addRootDir: {
+                type: "string"
+            },
+            addExtends: {
                 type: "string"
             },
             tsconfigPath: {
@@ -88,10 +106,8 @@ export const run = async (
         rootDir: flags.root,
         checkOnly: flags.check,
         plugins,
-        onlyOnPath: flags.onlyOnPath,
-        removeComments: flags.removeComments,
-        indentation: flags.indentation,
-        tsConfigPathFinder: flags.tsconfigPath ? customTsConfigFinder : undefined
+        tsConfigPathFinder: flags.tsconfigPath ? customTsConfigFinder : undefined,
+        ...flags
     });
     if (result.ok) {
         return {
