@@ -10,6 +10,7 @@ export type Options = {
     checkOnly: boolean;
     onlyOnPath?: string;
     addRootDir?: string;
+    addExtends?: string;
     removeComments?: boolean;
     indentation?: number;
     plugins?: PackageManagerPlugin[];
@@ -55,7 +56,14 @@ export const toProjectReferences = (options: Options) => {
         const newTsconfigJSON = tsconfigJSON;
 
         if (options.addRootDir) {
-            newTsconfigJSON['rootDir'] = options.addRootDir
+            newTsconfigJSON["rootDir"] = options.addRootDir;
+        }
+
+        if (options.addExtends) {
+            newTsconfigJSON["extends"] = path.relative(
+                path.resolve(packageInfo.location),
+                path.resolve(options.addExtends)
+            );
         }
 
         const references = supportPlugin.getDependencies(packageInfo.packageJSON);
