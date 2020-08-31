@@ -55,22 +55,14 @@ export const toProjectReferences = (options: Options) => {
         }
 
         const tsconfigJSON = commentJSON.parse(fs.readFileSync(tsconfigFilePath, "utf-8"));
-        const newTsconfigJSON = tsconfigJSON;
+        const newTsconfigJSON = commentJSON.parse(commentJSON.stringify(tsconfigJSON), undefined, true);
 
         if (options.addComposite) {
-            const compilerOptions = newTsconfigJSON["compilerOptions"];
-            if (!compilerOptions) {
-                newTsconfigJSON["compilerOptions"] = {};
-            }
-            compilerOptions["composite"] = true;
+            setCompilerOption(newTsconfigJSON, "composite", true);
         }
 
         if (options.addRootDir) {
-            const compilerOptions = newTsconfigJSON["compilerOptions"];
-            if (!compilerOptions) {
-                newTsconfigJSON["compilerOptions"] = {};
-            }
-            compilerOptions["rootDir"] = options.addRootDir;
+            setCompilerOption(newTsconfigJSON, "rootDir", options.rootDir);
         }
 
         if (options.addExtends) {
@@ -121,6 +113,7 @@ export const toProjectReferences = (options: Options) => {
         newTsconfigJSON["references"] = newProjectReferences;
 
         if (options.checkOnly) {
+            // console.log(newTsconfigJSON, tsconfigJSON);
             assert.deepStrictEqual(pureObject(tsconfigJSON), pureObject(newTsconfigJSON));
         } else {
             // update
@@ -141,6 +134,14 @@ export const toProjectReferences = (options: Options) => {
 
 function pureObject(x) {
     return JSON.parse(JSON.stringify(commentJSON.parse(commentJSON.stringify(x), undefined, true)));
+}
+
+function setCompilerOption(newTsconfigJSON, k, v) {
+    const compilerOptions = newTsconfigJSON["compilerOptions"];
+    if (!compilerOptions) {
+        newTsconfigJSON["compilerOptions"] = {};
+    }
+    newTsconfigJSON["compilerOptions"][k] = v;
 }
 
 const isChildOf = (child: string, parent: string) => {

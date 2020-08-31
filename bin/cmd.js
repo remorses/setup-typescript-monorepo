@@ -15,4 +15,5 @@ require("../dist/cli")
             console.error(error);
             process.exit(1);
         }
-    );
+    )
+    .catch(console.error);

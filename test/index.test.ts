@@ -12,7 +12,8 @@ describe("toProjectReferences", function () {
     it("support yarn workspaces", () => {
         const result = toProjectReferences({
             rootDir: path.join(__dirname, "fixtures/yarn-workspaces"),
-            checkOnly: true
+            checkOnly: true,
+            addComposite: true
         });
         expect(result.ok).toBe(true);
     });
