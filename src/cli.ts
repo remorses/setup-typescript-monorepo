@@ -125,8 +125,14 @@ export const run = async (
     if (result.ok) {
         return {
             exitStatus: 0,
-            stdout: flags.check ? "" : "Update Project References!",
+            stdout: flags.check ? "" : "Updated Project References!",
             stderr: null
+        };
+    } else if (result.errors) {
+        return {
+            exitStatus: 1,
+            stdout: null,
+            stderr: '\n\n' + result.errors.join("\n\n\n")
         };
     }
     return {

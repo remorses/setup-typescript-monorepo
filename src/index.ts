@@ -54,6 +54,7 @@ export const toProjectReferences = (options: Options) => {
             .map((x) => allPackages.find((y) => y.packageJSON.name === x))
             .map((x) => getDependencies(x.packageJSON).filter((k) => allPackages.find((x) => x.packageJSON.name === k)))
     );
+    const errors = [];
     allPackages.forEach((packageInfo) => {
         // TODO add the package.json script
         // skip if not in  onlyPackages
@@ -158,7 +159,12 @@ export const toProjectReferences = (options: Options) => {
 
         if (options.checkOnly) {
             // console.log(newTsconfigJSON, tsconfigJSON);
-            assert.deepStrictEqual(pureObject(tsconfigJSON), pureObject(newTsconfigJSON));
+            try {
+                assert.deepStrictEqual(pureObject(tsconfigJSON), pureObject(newTsconfigJSON));
+            } catch (e) {
+                // console.log("tsconfig different than expected");
+                errors.push(e.message);
+            }
         } else {
             // update
             const indentation = options.indentation ?? 2;
@@ -171,6 +177,12 @@ export const toProjectReferences = (options: Options) => {
             );
         }
     });
+    if (errors.length) {
+        return {
+            ok: false,
+            errors
+        };
+    }
     return {
         ok: true
     };
