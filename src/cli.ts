@@ -72,6 +72,9 @@ export const cli = meow(
                 type: "string",
                 isMultiple: true
             },
+            packageJsonTemplate: {
+                type: "string"
+            },
             onlyOnPath: {
                 type: "string"
             },
@@ -132,7 +135,7 @@ export const run = async (
         return {
             exitStatus: 1,
             stdout: null,
-            stderr: '\n\n' + result.errors.join("\n\n\n")
+            stderr: "\n\n" + result.errors.join("\n\n\n")
         };
     }
     return {

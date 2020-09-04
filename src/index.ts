@@ -1,5 +1,6 @@
 import fs, { writeFileSync, existsSync } from "fs";
 import path from "path";
+import { merge } from "lodash/fp";
 import commentJSON from "comment-json";
 import { plugin as workspacesPlugin } from "./manager/workspaces";
 import assert from "assert";
@@ -16,6 +17,7 @@ export type Options = {
     addRootDir?: string;
     addEsmTsconfig?: string;
     addExtends?: string;
+    packageJsonTemplate?: string;
     removeComments?: boolean;
     addComposite?: boolean;
     indentation?: number;
@@ -97,6 +99,13 @@ export const toProjectReferences = (options: Options) => {
                 );
                 writeFileSync(path.resolve(packageInfo.location, options.addEsmTsconfig), esmTsconfig);
             }
+        }
+
+        if (!options.checkOnly && options.packageJsonTemplate) {
+            const template = JSON.parse(fs.readFileSync(options.packageJsonTemplate).toString());
+
+            const newPackageJson = JSON.stringify(merge(packageInfo.packageJSON, template), null, options.indentation);
+            writeFileSync(path.resolve(packageInfo.location, "package.json"), newPackageJson + "\n");
         }
 
         const tsconfigJSON = commentJSON.parse(fs.readFileSync(tsconfigFilePath, "utf-8"));
